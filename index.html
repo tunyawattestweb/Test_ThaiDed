@@ -1,0 +1,1503 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ไทยเด็ด · Dashboard วิเคราะห์ข้อมูลสินค้า</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{--gold:#C9A84C;--gold-l:#E8C96D;--gold-pale:#FDF6E8;--em:#1A5C45;--em2:#2A7A5C;--em3:#3D9970;--cream:#F7F3EC;--dark:#0D1B13;--white:#FFFFFF;--border:#E3DAC9;--txt:#18261E;--muted:#7A8C84;--red:#C0392B;--blue:#1A5276;--orange:#CA6F1E;--sh:0 4px 24px rgba(26,92,69,.07);--sh2:0 12px 40px rgba(26,92,69,.16)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--cream);font-family:'Sarabun',sans-serif;color:var(--txt);min-height:100vh;font-size:14px}
+
+/* HEADER */
+header{background:linear-gradient(140deg,#0D1B13 0%,#1A5C45 55%,#24694F 100%);position:relative;overflow:hidden}
+header::before{content:'';position:absolute;top:-80px;right:-60px;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(201,168,76,.2) 0%,transparent 65%)}
+header::after{content:'';position:absolute;bottom:-50px;left:25%;width:250px;height:250px;border-radius:50%;background:radial-gradient(circle,rgba(201,168,76,.1) 0%,transparent 65%)}
+.h-inner{max-width:1360px;margin:0 auto;padding:28px 36px 24px;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1}
+.brand{display:flex;align-items:center;gap:16px}
+.logo{width:52px;height:52px;background:linear-gradient(135deg,var(--gold),var(--gold-l));border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:var(--dark);box-shadow:0 4px 20px rgba(201,168,76,.4)}
+.brand-txt h1{font-size:24px;font-weight:800;color:#fff;line-height:1.1}
+.brand-txt p{font-size:12px;color:var(--gold-l);margin-top:2px;letter-spacing:.8px}
+.h-chips{display:flex;gap:10px;flex-wrap:wrap}
+.chip{padding:6px 14px;border-radius:100px;font-size:11px;font-weight:600;letter-spacing:.5px}
+.chip-outline{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.8)}
+.chip-gold{background:rgba(201,168,76,.18);border:1px solid rgba(201,168,76,.35);color:var(--gold-l)}
+
+/* NAV */
+.nav{background:var(--dark);border-bottom:2px solid rgba(201,168,76,.15)}
+.nav-inner{max-width:1360px;margin:0 auto;padding:0 36px;display:flex;gap:2px;overflow-x:auto}
+.tab{padding:13px 20px;font-size:12.5px;font-weight:700;color:rgba(255,255,255,.45);cursor:pointer;background:none;border:none;border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap;font-family:inherit;transition:all .2s;letter-spacing:.3px}
+.tab:hover{color:rgba(255,255,255,.8)}
+.tab.on{color:var(--gold-l);border-bottom-color:var(--gold)}
+
+/* CONTENT */
+.content{max-width:1360px;margin:0 auto;padding:32px 36px}
+.sec{display:none;animation:up .45s ease both}
+.sec.on{display:block}
+@keyframes up{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+/* KPI GRID */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:28px}
+.kpi{background:var(--white);border-radius:16px;padding:22px 24px;box-shadow:var(--sh);border:1px solid var(--border);position:relative;overflow:hidden;transition:box-shadow .2s,transform .2s}
+.kpi:hover{box-shadow:var(--sh2);transform:translateY(-2px)}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;border-radius:16px 16px 0 0}
+.kpi.c-gold::before{background:linear-gradient(90deg,var(--gold),var(--gold-l))}
+.kpi.c-em::before{background:linear-gradient(90deg,var(--em),var(--em3))}
+.kpi.c-red::before{background:linear-gradient(90deg,var(--red),#E74C3C)}
+.kpi.c-blue::before{background:linear-gradient(90deg,var(--blue),#2E86C1)}
+.kpi-ico{font-size:26px;margin-bottom:10px}
+.kpi-val{font-size:32px;font-weight:800;line-height:1;margin-bottom:3px}
+.kpi-lbl{font-size:12px;color:var(--muted)}
+.kpi-pill{display:inline-block;margin-top:8px;font-size:11px;font-weight:700;padding:3px 10px;border-radius:100px;background:rgba(26,92,69,.07);color:var(--em2)}
+
+/* SECTION HEADER */
+.sh{display:flex;align-items:center;gap:12px;margin-bottom:20px;margin-top:6px}
+.sh h2{font-size:18px;font-weight:800}
+.sh .n{background:var(--em);color:#fff;font-size:10px;padding:3px 9px;border-radius:100px;font-weight:700}
+.sh-line{flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent)}
+
+/* CARDS */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:22px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-bottom:22px}
+.g6040{display:grid;grid-template-columns:1.5fr 1fr;gap:20px;margin-bottom:22px}
+.g4060{display:grid;grid-template-columns:1fr 1.5fr;gap:20px;margin-bottom:22px}
+.card{background:var(--white);border-radius:16px;padding:24px;box-shadow:var(--sh);border:1px solid var(--border)}
+.card-title{font-size:14px;font-weight:700;margin-bottom:3px}
+.card-sub{font-size:11px;color:var(--muted);margin-bottom:18px}
+
+/* RANK LIST */
+.rank-list{display:flex;flex-direction:column;gap:7px}
+.rank-item{display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--cream);border-radius:9px;border:1px solid var(--border);transition:all .18s;cursor:default}
+.rank-item:hover{background:var(--gold-pale);border-color:rgba(201,168,76,.5);transform:translateX(3px)}
+.rk{width:24px;height:24px;border-radius:50%;background:var(--em);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.rk.top{background:linear-gradient(135deg,var(--gold),var(--gold-l));color:var(--dark)}
+.rk-name{flex:1;font-size:12.5px;font-weight:600;line-height:1.3}
+.rk-val{font-size:12px;font-weight:700;color:var(--em)}
+.rk-bar-wrap{width:80px;height:5px;background:#E8E0D0;border-radius:3px;overflow:hidden}
+.rk-bar{height:100%;background:linear-gradient(90deg,var(--em2),var(--em3));border-radius:3px;transition:width .6s ease}
+
+/* TAGS */
+.tag{display:inline-flex;align-items:center;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;letter-spacing:.4px;margin:1px}
+.t-tvc{background:#FADBD8;color:#922B21}
+.t-tiktok{background:#EAF2FF;color:#1A3B6D}
+.t-super{background:#FEF9E7;color:#9A7D0A}
+.t-amz{background:#E8F8F5;color:#0B6655}
+.t-yt{background:#FDFEFE;color:#C0392B;border:1px solid #FADBD8}
+.t-new{background:#F0E6FF;color:#5B2C8D;border:1px solid #D2B4DE}
+
+.ptype{font-size:10px;padding:2px 8px;border-radius:100px;font-weight:600}
+.pt-sme{background:#EBF5FB;color:#1A5276}
+.pt-vis{background:#E9F7EF;color:#1A5C45}
+.pt-both{background:#FDF2E9;color:#935116}
+
+/* STATUS BADGE */
+.status{font-size:10.5px;padding:2px 9px;border-radius:100px;font-weight:600}
+.s-ok{background:#E9F7EF;color:#1A5C45}
+.s-pend{background:#FDF2E9;color:#935116}
+.s-rev{background:#EBF5FB;color:#1A5276}
+
+/* PROMOTION CHANNEL CARDS */
+.promo-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:22px}
+.promo-card{background:var(--white);border-radius:14px;padding:18px 16px;box-shadow:var(--sh);border:1px solid var(--border);text-align:center;transition:all .2s}
+.promo-card:hover{box-shadow:var(--sh2);transform:translateY(-2px)}
+.promo-ico{font-size:28px;margin-bottom:8px}
+.promo-name{font-size:12px;font-weight:700;margin-bottom:4px}
+.promo-count{font-size:26px;font-weight:800;color:var(--em)}
+.promo-lbl{font-size:10px;color:var(--muted);margin-top:2px}
+.promo-bar{height:4px;border-radius:2px;margin-top:10px;background:#E8E0D0;overflow:hidden}
+.promo-fill{height:100%;border-radius:2px;transition:width .8s ease}
+
+/* LEVEL BADGE */
+.lv-badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;margin-bottom:4px}
+.lv1{background:linear-gradient(90deg,var(--gold),var(--gold-l));color:var(--dark)}
+.lv2{background:linear-gradient(90deg,var(--em2),var(--em3));color:#fff}
+
+/* MAP STYLE PROVINCE CARDS */
+.prov-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:8px}
+.prov-card{background:var(--white);border-radius:11px;padding:12px 10px;border:1px solid var(--border);text-align:center;cursor:default;transition:all .18s}
+.prov-card:hover{background:var(--gold-pale);border-color:var(--gold);transform:scale(1.03)}
+.prov-name{font-size:12px;font-weight:700;margin-bottom:5px}
+.prov-amt{font-size:15px;font-weight:800;color:var(--em)}
+.prov-cnt{font-size:10px;color:var(--muted)}
+
+/* STORE TYPE LEGEND */
+.store-legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px}
+.legend-dot{display:flex;align-items:center;gap:6px;font-size:12px}
+.dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+
+/* SCROLLABLE LIST */
+.scroll-list{max-height:380px;overflow-y:auto;padding-right:4px}
+.scroll-list::-webkit-scrollbar{width:4px}
+.scroll-list::-webkit-scrollbar-track{background:var(--cream)}
+.scroll-list::-webkit-scrollbar-thumb{background:var(--gold);border-radius:2px}
+
+/* FILTERS */
+.filter-row{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;align-items:center}
+.filter-btn{padding:7px 16px;border-radius:100px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:var(--white);color:var(--txt);font-family:inherit;transition:all .18s}
+.filter-btn:hover,.filter-btn.on{background:var(--em);color:#fff;border-color:var(--em)}
+.filter-lbl{font-size:12px;font-weight:600;color:var(--muted)}
+
+/* TABLE */
+.data-table{width:100%;border-collapse:collapse;font-size:12.5px}
+.data-table th{padding:10px 12px;background:var(--em);color:#fff;font-weight:700;text-align:left;font-size:11.5px;letter-spacing:.3px}
+.data-table th:first-child{border-radius:8px 0 0 0}
+.data-table th:last-child{border-radius:0 8px 0 0}
+.data-table td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+.data-table tr:last-child td{border-bottom:none}
+.data-table tr:hover td{background:var(--gold-pale)}
+.data-table tr:nth-child(even) td{background:rgba(247,243,236,.5)}
+
+/* INSIGHT BOX */
+.insight{background:linear-gradient(135deg,var(--em) 0%,var(--em2) 100%);border-radius:16px;padding:22px 26px;color:#fff;margin-bottom:22px}
+.insight h3{font-size:15px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.insight-items{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.ins-item{background:rgba(255,255,255,.1);border-radius:10px;padding:14px 16px;backdrop-filter:blur(4px)}
+.ins-item .i-val{font-size:20px;font-weight:800;color:var(--gold-l);margin-bottom:4px}
+.ins-item .i-lbl{font-size:11px;color:rgba(255,255,255,.75)}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .kpi-row{grid-template-columns:repeat(2,1fr)}
+  .g2,.g3,.g6040,.g4060{grid-template-columns:1fr}
+  .promo-grid{grid-template-columns:repeat(3,1fr)}
+  .prov-grid{grid-template-columns:repeat(3,1fr)}
+  .insight-items{grid-template-columns:1fr 1fr}
+  .h-inner{flex-direction:column;gap:14px;text-align:center}
+  .content{padding:20px 18px}
+}
+@media(max-width:600px){
+  .kpi-row{grid-template-columns:1fr 1fr}
+  .promo-grid{grid-template-columns:repeat(2,1fr)}
+  .nav-inner{padding:0 16px}
+}
+
+/* PROVINCE MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+.modal-overlay.open{display:flex}
+.modal-box{background:var(--white);border-radius:20px;padding:28px 30px;max-width:520px;width:100%;max-height:80vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,.25);position:relative}
+.modal-box::-webkit-scrollbar{width:4px}
+.modal-box::-webkit-scrollbar-thumb{background:var(--gold);border-radius:2px}
+.modal-close{position:absolute;top:16px;right:18px;background:var(--cream);border:none;border-radius:50%;width:32px;height:32px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .18s}
+.modal-close:hover{background:var(--gold-pale)}
+.modal-title{font-size:18px;font-weight:800;margin-bottom:4px}
+.modal-sub{font-size:12px;color:var(--muted);margin-bottom:18px}
+.branch-item{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--cream);border-radius:10px;border:1px solid var(--border);margin-bottom:7px;transition:all .15s}
+.branch-item:hover{background:var(--gold-pale);border-color:rgba(201,168,76,.4)}
+.branch-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.branch-name{flex:1;font-size:12.5px;font-weight:600}
+.branch-type{font-size:10px;padding:2px 8px;border-radius:100px;font-weight:600}
+/* NO-PROMO CARD */
+.np-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.np-tag{display:inline-flex;align-items:center;gap:6px;background:var(--cream);border:1.5px solid var(--border);border-radius:100px;padding:5px 13px;font-size:12px;font-weight:600;cursor:default;transition:all .15s}
+.np-tag:hover{background:var(--gold-pale);border-color:var(--gold)}
+.np-tag-lv{font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="h-inner">
+    <div class="brand">
+      <img src="data:image/png;base64,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" alt="ไทยเด็ด Logo" style="width:56px;height:56px;border-radius:50%;object-fit:cover;box-shadow:0 4px 20px rgba(201,168,76,.4);background:#fff;padding:2px">
+      <div class="brand-txt">
+        <h1>สรุปข้อมูลไทยเด็ด</h1>
+        <p>รายงานวิเคราะห์สินค้าและสาขา</p>
+      </div>
+    </div>
+    <div class="h-chips">
+      <span class="chip chip-outline">📅 ข้อมูล ณ 1 มกราคม 2565 – 22 มีนาคม 2569</span>
+    </div>
+  </div>
+</header>
+
+<!-- NAV -->
+<div class="nav">
+  <div class="nav-inner">
+    <button class="tab on" onclick="showSec('overview',this)">🏠 ภาพรวม</button>
+    <button class="tab" onclick="showSec('products',this)">📦 สินค้า L1 / L2</button>
+    <button class="tab" onclick="showSec('branches',this)">⛽ สาขา & จังหวัด</button>
+    <button class="tab" onclick="showSec('promotions',this)">📣 ช่องทางโปรโมท</button>
+    <button class="tab" onclick="showSec('orders',this)">🚚 คำสั่งซื้อ & จัดส่ง</button>
+  </div>
+</div>
+
+<div class="content">
+
+<!-- ═══════════ OVERVIEW ═══════════ -->
+<div id="overview" class="sec on">
+
+  <div class="kpi-row">
+    <div class="kpi c-gold">
+      <div class="kpi-ico">💰</div>
+      <div class="kpi-val">7.79<small style="font-size:18px">ล้าน</small></div>
+      <div class="kpi-lbl">ยอดขายรวม (บาท)</div>
+      <span class="kpi-pill">Sum of Total Price</span>
+    </div>
+    <div class="kpi c-em">
+      <div class="kpi-ico">🛒</div>
+      <div class="kpi-val">2,537</div>
+      <div class="kpi-lbl">คำสั่งซื้อทั้งหมด</div>
+      <span class="kpi-pill">Total Orders</span>
+    </div>
+    <div class="kpi c-blue">
+      <div class="kpi-ico">🏪</div>
+      <div class="kpi-val">85</div>
+      <div class="kpi-lbl">สินค้าในระบบ (L1+L2)</div>
+      <span class="kpi-pill">48 L1 · 37 L2</span>
+    </div>
+    <div class="kpi c-red">
+      <div class="kpi-ico">⛽</div>
+      <div class="kpi-val">49</div>
+      <div class="kpi-lbl">สาขา PTT ที่ใช้งาน</div>
+      <span class="kpi-pill">ร้านไทยเด็ด + มุม + Kiosk</span>
+    </div>
+  </div>
+
+  <div class="insight">
+    <h3>⚡ Key Insights สรุปภาพรวม</h3>
+    <div class="insight-items">
+      <div class="ins-item">
+        <div class="i-val">MONTMAXX</div>
+        <div class="i-lbl">🥇 สินค้ายอดขายอันดับ 1 — กระเป๋าผ้า 1.79 ล้านบาท</div>
+      </div>
+      <div class="ins-item">
+        <div class="i-val">คุณเท่ง ชะอำ</div>
+        <div class="i-lbl">🏆 สาขายอดซื้อสูงสุด — 839,980 บาท / 83 orders</div>
+      </div>
+      <div class="ins-item">
+        <div class="i-val">3,070 ฿</div>
+        <div class="i-lbl">📦 มูลค่าเฉลี่ยต่อออเดอร์ (Avg. Order Value)</div>
+      </div>
+      <div class="ins-item">
+        <div class="i-val">ร้านไทยเด็ด</div>
+        <div class="i-lbl">🏪 รูปแบบร้านหลัก (15 สาขา) + มุมไทยเด็ด 20 สาขา</div>
+      </div>
+      <div class="ins-item">
+        <div class="i-val">TVC + TikTok</div>
+        <div class="i-lbl">📣 ช่องทางโปรโมทหลัก — 7 สินค้า L1 ได้รับการโปรโมท</div>
+      </div>
+      <div class="ins-item">
+        <div class="i-val">Thailand Post</div>
+        <div class="i-lbl">🚚 ขนส่งหลัก 37% — Flash Express รอง 21%</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="card-title">🏆 Top 10 สินค้า — ยอดขายสูงสุด</div>
+      <div class="card-sub">เรียงตามมูลค่ายอดขายรวมทั้งหมด</div>
+      <div class="chart-wrap"><canvas id="c-topshop" height="280"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">⛽ Top 10 สาขา — ยอดซื้อสูงสุด</div>
+      <div class="card-sub">มูลค่าการสั่งซื้อสะสมตลอดช่วงเวลา</div>
+      <div class="chart-wrap"><canvas id="c-topbranch" height="280"></canvas></div>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="card-title">📊 สัดส่วนประเภทสินค้า</div>
+      <div class="card-sub">SME vs วิสาหกิจชุมชน (L1+L2 รวม 85 รายการ)</div>
+      <div class="chart-wrap" style="max-width:240px;margin:0 auto"><canvas id="c-types" height="220"></canvas></div>
+      <div class="store-legend" style="justify-content:center;margin-top:12px">
+        <div class="legend-dot"><div class="dot" style="background:#1A5276"></div>SME</div>
+        <div class="legend-dot"><div class="dot" style="background:#1A5C45"></div>วิสาหกิจ</div>
+        <div class="legend-dot"><div class="dot" style="background:#CA6F1E"></div>SME&วิสาหกิจ</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">🏪 รูปแบบร้านค้า</div>
+      <div class="card-sub">จำนวนสาขาแต่ละรูปแบบ (รวม 49 สาขา)</div>
+      <div class="chart-wrap" style="max-width:240px;margin:0 auto"><canvas id="c-storetype" height="220"></canvas></div>
+    </div>
+  </div>
+
+  <!-- NO-PROMO SELLING PRODUCTS -->
+  <div class="card" style="margin-bottom:0">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:8px">
+      <div>
+        <div class="card-title">🛒 สินค้าที่ขายได้ — ยังไม่มีการโปรโมท</div>
+        <div class="card-sub" style="margin-bottom:0">สินค้า L1 ที่มียอดขายในระบบ แต่ยังไม่ได้ผ่านช่องทาง TVC / TikTok / Super 100 — โอกาสขยายการรับรู้</div>
+      </div>
+      <span id="np-count-badge" style="background:var(--em);color:#fff;font-size:11px;font-weight:700;padding:4px 12px;border-radius:100px;white-space:nowrap"></span>
+    </div>
+    <div class="np-grid" id="overview-nopromo"></div>
+  </div>
+
+</div>
+
+<!-- ═══════════ PRODUCTS ═══════════ -->
+<div id="products" class="sec">
+
+  <!-- LAYER CRITERIA BOX -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:22px">
+    <div style="background:linear-gradient(135deg,#0D1B13,#1A5C45);border-radius:16px;padding:20px 24px;color:#fff">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+        <span style="background:linear-gradient(90deg,var(--gold),var(--gold-l));color:#0D1B13;font-size:11px;font-weight:800;padding:4px 12px;border-radius:100px;letter-spacing:.5px">🌟 LAYER 1 · NATIONWIDE</span>
+      </div>
+      <p style="font-size:12px;color:rgba(255,255,255,.6);margin-bottom:10px;letter-spacing:.3px">เกณฑ์การคัดเลือกสินค้าระดับประเทศ</p>
+      <div style="display:flex;flex-direction:column;gap:7px">
+        <div style="display:flex;align-items:flex-start;gap:8px;background:rgba(255,255,255,.07);border-radius:8px;padding:9px 12px">
+          <span style="font-size:14px;flex-shrink:0">🏆</span>
+          <span style="font-size:12px;line-height:1.5">สินค้าที่ได้รับ<strong style="color:var(--gold-l)">ความนิยมสูง</strong> — อยู่ใน Top List ของยอดขาย</span>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:8px;background:rgba(255,255,255,.07);border-radius:8px;padding:9px 12px">
+          <span style="font-size:14px;flex-shrink:0">⚙️</span>
+          <span style="font-size:12px;line-height:1.5"><strong style="color:var(--gold-l)">กำลังการผลิตสูง</strong> — รองรับความต้องการในระดับประเทศได้</span>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:8px;background:rgba(255,255,255,.07);border-radius:8px;padding:9px 12px">
+          <span style="font-size:14px;flex-shrink:0">🚚</span>
+          <span style="font-size:12px;line-height:1.5"><strong style="color:var(--gold-l)">สามารถจัดส่งได้ทั่วประเทศ</strong> — ระบบโลจิสติกส์พร้อม</span>
+        </div>
+      </div>
+      <div style="margin-top:12px;font-size:11px;color:rgba(255,255,255,.4)">จำนวนสินค้า: <strong style="color:var(--gold-l);font-size:16px">48</strong> รายการ</div>
+    </div>
+    <div style="background:linear-gradient(135deg,#1A3B6D,#1A5276);border-radius:16px;padding:20px 24px;color:#fff">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+        <span style="background:linear-gradient(90deg,#3D9970,#2A7A5C);color:#fff;font-size:11px;font-weight:800;padding:4px 12px;border-radius:100px;letter-spacing:.5px">📍 LAYER 2 · REGIONAL</span>
+      </div>
+      <p style="font-size:12px;color:rgba(255,255,255,.6);margin-bottom:10px;letter-spacing:.3px">เกณฑ์การคัดเลือกสินค้าระดับภูมิภาค</p>
+      <div style="display:flex;flex-direction:column;gap:7px">
+        <div style="display:flex;align-items:flex-start;gap:8px;background:rgba(255,255,255,.07);border-radius:8px;padding:9px 12px">
+          <span style="font-size:14px;flex-shrink:0">📍</span>
+          <span style="font-size:12px;line-height:1.5">สินค้าที่ได้รับ<strong style="color:#7DCEA0">ความนิยมเฉพาะถิ่น</strong> — เป็นเอกลักษณ์ของแต่ละภูมิภาค</span>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:8px;background:rgba(255,255,255,.07);border-radius:8px;padding:9px 12px">
+          <span style="font-size:14px;flex-shrink:0">🔧</span>
+          <span style="font-size:12px;line-height:1.5"><strong style="color:#7DCEA0">กำลังการผลิตปานกลาง</strong> — เหมาะสมกับการกระจายในพื้นที่</span>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:8px;background:rgba(255,255,255,.07);border-radius:8px;padding:9px 12px">
+          <span style="font-size:14px;flex-shrink:0">🗺️</span>
+          <span style="font-size:12px;line-height:1.5"><strong style="color:#7DCEA0">สามารถจัดส่งได้ภายในภูมิภาคนั้น</strong> — การกระจายสินค้าเฉพาะโซน</span>
+        </div>
+      </div>
+      <div style="margin-top:12px;font-size:11px;color:rgba(255,255,255,.4)">จำนวนสินค้า: <strong style="color:#7DCEA0;font-size:16px">37</strong> รายการ</div>
+    </div>
+  </div>
+
+  <div class="filter-row">
+    <span class="filter-lbl">กรองตามระดับ:</span>
+    <button class="filter-btn on" onclick="filterProducts('all',this)">ทั้งหมด (85)</button>
+    <button class="filter-btn" onclick="filterProducts('l1',this)">🌟 L1 Nationwide (48)</button>
+    <button class="filter-btn" onclick="filterProducts('l2',this)">📍 L2 Regional (37)</button>
+    <span class="filter-lbl" style="margin-left:10px">กรองตามประเภท:</span>
+    <button class="filter-btn" onclick="filterProducts('sme',this)">SME</button>
+    <button class="filter-btn" onclick="filterProducts('vis',this)">วิสาหกิจ</button>
+  </div>
+
+  <div class="g2">
+    <div>
+      <div class="sh"><h2>🌟 L1 — Nationwide Products</h2><span class="n">48 รายการ</span><div class="sh-line"></div></div>
+      <div class="card" style="padding:16px">
+        <div class="scroll-list" id="l1-list"></div>
+      </div>
+    </div>
+    <div>
+      <div class="sh"><h2>📍 L2 — Regional Products</h2><span class="n">37 รายการ</span><div class="sh-line"></div></div>
+      <div class="card" style="padding:16px">
+        <div class="scroll-list" id="l2-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="card-title">📣 สินค้า L1 — แบ่งตามช่องทางโปรโมท</div>
+      <div class="card-sub">จำนวนสินค้าในแต่ละช่องทาง</div>
+      <div class="chart-wrap"><canvas id="c-promochan" height="220"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">📊 การกระจายประเภทสินค้า L1 vs L2</div>
+      <div class="card-sub">SME, วิสาหกิจชุมชน, และ SME&วิสาหกิจ</div>
+      <div class="chart-wrap"><canvas id="c-typecompare" height="220"></canvas></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════ BRANCHES ═══════════ -->
+<div id="branches" class="sec">
+
+  <div class="insight" style="margin-bottom:22px">
+    <h3>⛽ ภาพรวมสาขา PTT ในระบบไทยเด็ด</h3>
+    <div class="insight-items">
+      <div class="ins-item">
+        <div class="i-val">49 สาขา</div>
+        <div class="i-lbl">จำนวนสาขาในระบบทั้งหมด</div>
+      </div>
+      <div class="ins-item">
+        <div class="i-val">28 จังหวัด</div>
+        <div class="i-lbl">ครอบคลุมทั่วประเทศ</div>
+      </div>
+      <div class="ins-item">
+        <div class="i-val">7.79 ล้าน ฿</div>
+        <div class="i-lbl">ยอดสั่งซื้อรวมทุกสาขา</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="g6040">
+    <div class="card">
+      <div class="card-title">🏆 Top 15 สาขา — ยอดซื้อสูงสุด</div>
+      <div class="card-sub">มูลค่าสะสม (บาท) — คลิกดูรายละเอียด</div>
+      <div class="chart-wrap"><canvas id="c-branches" height="380"></canvas></div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-title">🏪 ประเภทร้านค้า (Footprint)</div>
+        <div class="card-sub">รูปแบบการวางขายในปั๊ม PTT</div>
+        <div class="chart-wrap" style="max-width:220px;margin:0 auto"><canvas id="c-storepie" height="200"></canvas></div>
+        <div class="store-legend" style="justify-content:center;margin-top:10px">
+          <div class="legend-dot"><div class="dot" style="background:#1A5C45"></div>ร้านไทยเด็ด (15)</div>
+          <div class="legend-dot"><div class="dot" style="background:#C9A84C"></div>มุมไทยเด็ด (20)</div>
+          <div class="legend-dot"><div class="dot" style="background:#1A5276"></div>Kiosk (3)</div>
+          <div class="legend-dot"><div class="dot" style="background:#AAB7B8"></div>ไม่มี (11)</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">📍 Top 5 จังหวัด — สาขามากที่สุด</div>
+        <div class="card-sub">กดที่จังหวัดเพื่อดูรายชื่อสาขาทั้งหมด</div>
+        <div class="rank-list" id="prov-rank"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sh"><h2>📍 จังหวัดที่มีสาขา</h2><span class="n">28 จังหวัด</span><div class="sh-line"></div></div>
+  <div class="card">
+    <div class="prov-grid" id="prov-grid"></div>
+  </div>
+
+</div>
+
+<!-- ═══════════ PROMOTIONS ═══════════ -->
+<div id="promotions" class="sec">
+
+  <div class="sh"><h2>📣 ช่องทางการโปรโมทสินค้าไทยเด็ด</h2><div class="sh-line"></div></div>
+
+  <div class="promo-grid">
+    <div class="promo-card">
+      <div class="promo-ico">📺</div>
+      <div class="promo-name">TVC</div>
+      <div class="promo-count">10</div>
+      <div class="promo-lbl">สินค้าได้รับการโปรโมท</div>
+      <div class="promo-bar"><div class="promo-fill" style="width:75%;background:linear-gradient(90deg,#C0392B,#E74C3C)"></div></div>
+    </div>
+    <div class="promo-card">
+      <div class="promo-ico">🎵</div>
+      <div class="promo-name">TikTok</div>
+      <div class="promo-count">7</div>
+      <div class="promo-lbl">สินค้าได้รับการโปรโมท</div>
+      <div class="promo-bar"><div class="promo-fill" style="width:52%;background:linear-gradient(90deg,#1C2833,#34495E)"></div></div>
+    </div>
+    <div class="promo-card">
+      <div class="promo-ico">⭐</div>
+      <div class="promo-name">Super 100</div>
+      <div class="promo-count">5</div>
+      <div class="promo-lbl">สินค้าได้รับการโปรโมท</div>
+      <div class="promo-bar"><div class="promo-fill" style="width:37%;background:linear-gradient(90deg,var(--gold),var(--gold-l))"></div></div>
+    </div>
+    <div class="promo-card">
+      <div class="promo-ico">🛒</div>
+      <div class="promo-name">Amazon / AMZ</div>
+      <div class="promo-count">3</div>
+      <div class="promo-lbl">สินค้าได้รับการโปรโมท</div>
+      <div class="promo-bar"><div class="promo-fill" style="width:22%;background:linear-gradient(90deg,#0B6655,#17A589)"></div></div>
+    </div>
+    <div class="promo-card">
+      <div class="promo-ico">▶️</div>
+      <div class="promo-name">YouTube</div>
+      <div class="promo-count">1</div>
+      <div class="promo-lbl">สินค้าได้รับการโปรโมท</div>
+      <div class="promo-bar"><div class="promo-fill" style="width:8%;background:linear-gradient(90deg,#C0392B,#E74C3C)"></div></div>
+    </div>
+  </div>
+
+  <div class="g6040">
+    <div class="card">
+      <div class="card-title">📦 สินค้าที่ได้รับการโปรโมท — จำแนกตามช่องทาง</div>
+      <div class="card-sub">L1 products ที่มี TVC, TikTok, Super 100, AMZ หรือ YouTube</div>
+      <div class="rank-list" id="promo-products"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">📊 สัดส่วนช่องทางโปรโมชั่น</div>
+      <div class="card-sub">เปรียบเทียบความครอบคลุมแต่ละช่องทาง</div>
+      <div class="chart-wrap" style="max-width:260px;margin:0 auto"><canvas id="c-promopie" height="250"></canvas></div>
+    </div>
+  </div>
+
+  <div class="sh"><h2>🔍 สินค้าที่ไม่มีการโปรโมท</h2><div class="sh-line"></div></div>
+  <div class="card">
+    <div class="card-sub" style="margin-bottom:12px">สินค้า L1 ที่ยังไม่ผ่านช่องทาง TVC / TikTok / Super 100 — อาจเป็นโอกาสในการโปรโมทเพิ่มเติม</div>
+    <div id="no-promo-list" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+  </div>
+
+</div>
+
+<!-- ═══════════ ORDERS ═══════════ -->
+<div id="orders" class="sec">
+
+  <div class="kpi-row" style="grid-template-columns:repeat(3,1fr)">
+    <div class="kpi c-em">
+      <div class="kpi-ico">✅</div>
+      <div class="kpi-val">2,462</div>
+      <div class="kpi-lbl">ออเดอร์สำเร็จ</div>
+      <span class="kpi-pill">97.0% ของทั้งหมด</span>
+    </div>
+    <div class="kpi c-gold">
+      <div class="kpi-ico">🚚</div>
+      <div class="kpi-val">2,537</div>
+      <div class="kpi-lbl">คำสั่งซื้อทั้งหมด</div>
+      <span class="kpi-pill">Total Orders</span>
+    </div>
+    <div class="kpi c-blue">
+      <div class="kpi-ico">💰</div>
+      <div class="kpi-val">3,070<small style="font-size:16px"> ฿</small></div>
+      <div class="kpi-lbl">มูลค่าเฉลี่ยต่อออเดอร์</div>
+      <span class="kpi-pill">Avg. Order Value</span>
+    </div>
+  </div>
+
+  <!-- MONTHLY BY PRODUCT CHART - COMPREHENSIVE -->
+  <div class="card" style="margin-bottom:22px">
+    <div style="margin-bottom:16px">
+      <div class="card-title">📅 ยอดขายรายเดือน — แยกตามผลิตภัณฑ์</div>
+      <div class="card-sub">เลือกปี / เดือน / ผลิตภัณฑ์ เพื่อดูข้อมูลย้อนหลัง</div>
+    </div>
+
+    <!-- FILTER ROW 1: Year + View Mode -->
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;align-items:center">
+      <span style="font-size:12px;font-weight:600;color:var(--muted)">📆 ปี:</span>
+      <div id="year-btns" style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="filter-btn on" style="font-size:11px;padding:5px 12px" onclick="setYear('all',this)">ทั้งหมด</button>
+        <button class="filter-btn" style="font-size:11px;padding:5px 12px" onclick="setYear('2565',this)">2565</button>
+        <button class="filter-btn" style="font-size:11px;padding:5px 12px" onclick="setYear('2566',this)">2566</button>
+        <button class="filter-btn" style="font-size:11px;padding:5px 12px" onclick="setYear('2567',this)">2567</button>
+        <button class="filter-btn" style="font-size:11px;padding:5px 12px" onclick="setYear('2568',this)">2568</button>
+        <button class="filter-btn" style="font-size:11px;padding:5px 12px" onclick="setYear('2569',this)">2569</button>
+      </div>
+      <span style="font-size:12px;font-weight:600;color:var(--muted);margin-left:10px">📊 แสดง:</span>
+      <div id="metric-btns" style="display:flex;gap:6px">
+        <button class="filter-btn on" style="font-size:11px;padding:5px 12px" onclick="setMetric('revenue',this)">💰 ยอดรายได้</button>
+        <button class="filter-btn" style="font-size:11px;padding:5px 12px" onclick="setMetric('orders',this)">🛒 จำนวนออเดอร์</button>
+      </div>
+    </div>
+
+    <!-- FILTER ROW 2: Month Range -->
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;align-items:center">
+      <span style="font-size:12px;font-weight:600;color:var(--muted)">📅 เดือน:</span>
+      <div id="month-btns" style="display:flex;gap:4px;flex-wrap:wrap">
+        <button class="filter-btn on" style="font-size:10.5px;padding:4px 10px" onclick="setMonth('all',this)">ทั้งหมด</button>
+        <button class="filter-btn" style="font-size:10.5px;padding:4px 10px" onclick="setMonth('1',this)">ม.ค.</button>
+        <button class="filter-btn" style="font-size:10.5px;padding:4px 10px" onclick="setMonth('2',this)">ก.พ.</button>
+        <button class="filter-btn" style="font-size:10.5px;padding:4px 10px" onclick="setMonth('3',this)">มี.ค.</button>
+        <button class="filter-btn" style="font-size:10.5px;padding:4px 10px" onclick="setMonth('4',this)">เม.ย.</button>
+        <button class="filter-btn" style="font-size:10.5px;padding:4px 10px" onclick="setMonth('5',this)">พ.ค.</button>
+        <button class="filter-btn" style="font-size:10.5px;padding:4px 10px" onclick="setMonth('6',this)">มิ.ย.</button>
+        <button class="filter-btn" style="font-size:10.5px;padding:4px 10px" onclick="setMonth('7',this)">ก.ค.</button>
+        <button class="filter-btn" style="font-size:10.5px;padding:4px 10px" onclick="setMonth('8',this)">ส.ค.</button>
+        <button class="filter-btn" style="font-size:10.5px;padding:4px 10px" onclick="setMonth('9',this)">ก.ย.</button>
+        <button class="filter-btn" style="font-size:10.5px;padding:4px 10px" onclick="setMonth('10',this)">ต.ค.</button>
+        <button class="filter-btn" style="font-size:10.5px;padding:4px 10px" onclick="setMonth('11',this)">พ.ย.</button>
+        <button class="filter-btn" style="font-size:10.5px;padding:4px 10px" onclick="setMonth('12',this)">ธ.ค.</button>
+      </div>
+    </div>
+
+    <!-- FILTER ROW 3: Products -->
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;align-items:center">
+      <span style="font-size:12px;font-weight:600;color:var(--muted)">📦 สินค้า:</span>
+      <div id="prod-btns" style="display:flex;gap:5px;flex-wrap:wrap">
+        <button class="filter-btn on" style="font-size:10.5px;padding:4px 10px" onclick="setProd('all',this)">ทั้งหมด</button>
+        <button class="filter-btn" style="font-size:10.5px;padding:4px 10px" onclick="setProd('MONTMAXX',this)">MONTMAXX</button>
+        <button class="filter-btn" style="font-size:10.5px;padding:4px 10px" onclick="setProd('กล้วยตากไฮโซ',this)">กล้วยตากไฮโซ</button>
+        <button class="filter-btn" style="font-size:10.5px;padding:4px 10px" onclick="setProd('ปั้นขลิบ',this)">ปั้นขลิบน้องหนึ่ง</button>
+        <button class="filter-btn" style="font-size:10.5px;padding:4px 10px" onclick="setProd('ผ้าทอคราม',this)">ผ้าทอย้อมคราม</button>
+        <button class="filter-btn" style="font-size:10.5px;padding:4px 10px" onclick="setProd('มะขาม',this)">มะขามแก้วสี่รส</button>
+        <button class="filter-btn" style="font-size:10.5px;padding:4px 10px" onclick="setProd('ข้าวแตน',this)">ข้าวแตนน้ำแตงโม</button>
+        <button class="filter-btn" style="font-size:10.5px;padding:4px 10px" onclick="setProd('ถั่วลาย',this)">ถั่วลายเสือคั่ว</button>
+        <button class="filter-btn" style="font-size:10.5px;padding:4px 10px" onclick="setProd('กระเทียมดำ',this)">กระเทียมดำ B-Garlic</button>
+        <button class="filter-btn" style="font-size:10.5px;padding:4px 10px" onclick="setProd('เม็ดมะม่วง',this)">เม็ดมะม่วงหิมพานต์</button>
+        <button class="filter-btn" style="font-size:10.5px;padding:4px 10px" onclick="setProd('ขนมเปี๊ยะ',this)">ขนมเปี๊ยะแม่เอย</button>
+      </div>
+    </div>
+
+    <div class="chart-wrap"><canvas id="c-monthly-product" height="200"></canvas></div>
+    <div id="monthly-legend" style="display:flex;gap:14px;flex-wrap:wrap;margin-top:14px;padding-top:12px;border-top:1px solid var(--border)"></div>
+    <div id="monthly-summary" style="display:flex;gap:16px;flex-wrap:wrap;margin-top:10px"></div>
+  </div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="card-title">🚚 ช่องทางการจัดส่ง</div>
+      <div class="card-sub">จำนวน order ตามผู้ให้บริการขนส่ง (ออเดอร์สำเร็จ)</div>
+      <div class="chart-wrap"><canvas id="c-shipping" height="260"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">📊 สัดส่วนวิธีจัดส่ง</div>
+      <div class="card-sub">เปรียบเทียบสัดส่วนผู้ให้บริการขนส่งทั้งหมด</div>
+      <div class="chart-wrap" style="max-width:260px;margin:0 auto"><canvas id="c-shippie" height="260"></canvas></div>
+    </div>
+  </div>
+
+  <div class="sh"><h2>📋 Top Transactions — ยอดสูงสุด</h2><div class="sh-line"></div></div>
+  <div class="card" style="padding:16px 0;overflow:hidden">
+    <div style="overflow-x:auto;padding:0 16px">
+      <table class="data-table" id="top-orders-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>สาขา (Customer)</th>
+            <th>สินค้า (Shop Name)</th>
+            <th>มูลค่า (฿)</th>
+            <th>จัดส่งโดย</th>
+          </tr>
+        </thead>
+        <tbody id="orders-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+</div><!-- /content -->
+
+<script>
+// ══════════════════════════════════════════════════════
+// MASTER DATA
+// ══════════════════════════════════════════════════════
+const L1 = [
+  {r:0,n:'ปั้นขลิบทอด ตราน้องหนึ่ง',tvc:1,tt:1,s100:1,amz:0,yt:0,type:'SME&วิสาหกิจ',new:0},
+  {r:1,n:'ข้าวแตนน้ำแตงโม ตรา LeeRice',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'SME&วิสาหกิจ',new:0},
+  {r:2,n:'กล้วยตากไฮโซ',tvc:1,tt:1,s100:0,amz:0,yt:0,type:'SME&วิสาหกิจ',new:0},
+  {r:3,n:'มะม่วงอบแห้ง ตราตวงรัก',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'SME',new:0},
+  {r:4,n:'ต้มจั๊บอุบล',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'SME',new:0},
+  {r:5,n:'ทองม้วน ตราแก้ว',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'SME',new:0},
+  {r:6,n:'Fun Snack',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'SME',new:0},
+  {r:7,n:'ถั่วลายเสือคั่ว ตราถั่วคุณลุง',tvc:1,tt:1,s100:0,amz:0,yt:0,type:'SME',new:0},
+  {r:8,n:'ขนมเปี๊ยะแม่เอย',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'SME',new:0},
+  {r:9,n:'กุยช่ายทอดอบกรอบ ตรา Prinze Snack',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'SME',new:0},
+  {r:10,n:'น้ำพริกเผาป่าตาแดง (ตราบ้านแม่)',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'SME',new:0},
+  {r:11,n:'ชีวาร์ แฮร์โทนิคสมุนไพร',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'SME&วิสาหกิจ',new:0},
+  {r:12,n:'น้ำพริกเนื้อปู ตรารสมือนาง',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'SME',new:0},
+  {r:13,n:'ข้าวเกรียบปลา กรือโปะ ตรา Befish',tvc:0,tt:0,s100:0,amz:1,yt:0,type:'SME',new:0},
+  {r:14,n:'แห้วเบรคแตก',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'SME',new:1},
+  {r:15,n:'แผ่นปลากรอบ ตราโกก๊อบ',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'SME',new:1},
+  {r:16,n:'กระเทียมดำ B-Garlic',tvc:1,tt:1,s100:0,amz:0,yt:0,type:'SME',new:0},
+  {r:17,n:'กล้วยติดหนึบ ตราไร่บ้านข้าวหอม',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'วิสาหกิจ',new:0},
+  {r:18,n:'มะขามแก้วสี่รส',tvc:0,tt:0,s100:1,amz:0,yt:0,type:'วิสาหกิจ',new:0},
+  {r:19,n:'หนังปลาแซลมอน ตรา พร้อมเพลิน',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'SME',new:0},
+  {r:20,n:'ขนมโรตีกรอบจิ๋ว',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'SME',new:0},
+  {r:21,n:'ทอฟฟี่ถั่ว วรรณวนัช',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'SME',new:0},
+  {r:22,n:'เม็ดมะม่วงหิมพานต์ ตรา หาดไก่ต้อย',tvc:1,tt:0,s100:0,amz:0,yt:0,type:'วิสาหกิจ',new:0},
+  {r:23,n:'กล้วยทอดกรอบเนียนนา',tvc:1,tt:0,s100:0,amz:0,yt:0,type:'วิสาหกิจ',new:0},
+  {r:24,n:'ปลาแอนโชวี่อบกรอบ รสปาปริก้า',tvc:0,tt:0,s100:0,amz:1,yt:0,type:'SME',new:0},
+  {r:25,n:'สตรอเบอรี่อบแห้งแบรนด์จิน',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'SME',new:1},
+  {r:26,n:'กล้วยหอมทองทอดกรอบ',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'SME',new:0},
+  {r:27,n:'กล้วยกรอบ สวนตะวันจันทร์เจ้า',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'SME',new:0},
+  {r:28,n:'คุณนายก้นครัว หมี่โคราชพร้อมน้ำปรุง',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'SME',new:0},
+  {r:29,n:'ข้าวตัง สุคันธา',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'SME',new:0},
+  {r:30,n:'น้ำผึ้ง Siam Bee Secret',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'SME',new:0},
+  {r:32,n:'บ้านมะขาม กล้วยกรอบแก้วไส้มะขาม',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'SME',new:0},
+  {r:33,n:'ยาหม่องหอมแดง Hom hom brand balm',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'SME',new:0},
+  {r:34,n:'น้ำพริกกากหมู ตรา แม่แอ๊ว',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'SME',new:0},
+  {r:35,n:'นาวาตีกล้วยเส้นทรงเครื่อง',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'SME',new:0},
+  {r:36,n:'น้ำมันดอกไม้ เรือบุญ',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'SME',new:0},
+  {r:37,n:'สตาร์รี ผลไม้รวมกรอบ',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'SME',new:0},
+  {r:38,n:'มะขามจี๊ดแซ่บ',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'SME',new:0},
+  {r:39,n:'หมูแผ่นกรอบ ตราหมูยิ้มยิ้ม',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'SME',new:0},
+  {r:40,n:'Moei ขนมเนื้อปลาทะเลแผ่นอบกรอบ',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'SME',new:1},
+  {r:41,n:'อารยะ อโรม่าคลายเครียด',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'SME',new:1},
+  {r:42,n:'Banana Lipbalm',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'วิสาหกิจ',new:0},
+  {r:43,n:'THANIYA',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'SME',new:0},
+  {r:44,n:'เต้าหู้ปลากรอบ',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'SME',new:0},
+  {r:45,n:'Thai Soft-Dried Mango (Low Sugar)',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'SME',new:0},
+  {r:46,n:'ยาดมสมุนไพร ทิพย์เกสร',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'SME',new:0},
+  {r:47,n:'ยาดมตราฉุย',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'SME',new:0},
+  {r:48,n:'กล้วยทอดกรอบบานาน่า',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'SME',new:0}
+];
+
+const L2 = [
+  {r:0,n:'กระเป๋าผ้า Montmaxx DIY Bag',tvc:1,tt:0,s100:0,amz:0,yt:0,type:'วิสาหกิจ',new:0},
+  {r:0,n:'ผ้าทอย้อมคราม บ้านคำประมง',tvc:1,tt:0,s100:0,amz:0,yt:0,type:'วิสาหกิจ',new:0},
+  {r:1,n:'เห็ดนางฟ้าภูฐานทอดกรอบ ตราชื่นฟาร์ม',tvc:0,tt:0,s100:0,amz:1,yt:0,type:'SME',new:0},
+  {r:1,n:'ขนมลากรอบ (แบรนด์ แป้งหอม)',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'SME',new:0},
+  {r:2,n:'ข้าวซ้อมมือสังข์หยดเมืองพัทลุง',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'วิสาหกิจ',new:0},
+  {r:3,n:'ผลิตภัณฑ์จากผ้าขาวม้า อิมปานิ',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'วิสาหกิจ',new:0},
+  {r:4,n:'ผัดหมี่โคราช เรือนจันทกาญ',tvc:1,tt:0,s100:0,amz:0,yt:0,type:'วิสาหกิจ',new:0},
+  {r:5,n:'กล้วยอบ วัชรา',tvc:0,tt:0,s100:1,amz:0,yt:0,type:'วิสาหกิจ',new:0},
+  {r:6,n:'ถุงใส่ยาดมรามเกียรติ์',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'วิสาหกิจ',new:0},
+  {r:7,n:'กระเป๋าผ้ารักษ์โลก สารพัดสารพัน',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'วิสาหกิจ',new:0},
+  {r:8,n:'ผลไม้แปรรูป ดอยหลวง',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'วิสาหกิจ',new:0},
+  {r:9,n:'ลูกหยีทรงเครื่องไร้เมล็ด สะดาวา',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'วิสาหกิจ',new:0},
+  {r:10,n:'เซ็ตชาดอกไม้และสมุนไพร 4 ช่วงเวลา',tvc:0,tt:0,s100:1,amz:0,yt:0,type:'วิสาหกิจ',new:0},
+  {r:11,n:'ข้าวไรซ์เบอร์รี่สแน็คบาร์ ตรา Rice Me',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'วิสาหกิจ',new:0},
+  {r:12,n:'จักสานผักตบชวา จ.นครปฐม',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'วิสาหกิจ',new:0},
+  {r:13,n:'ทองม้วนแป้งกล้วยน้ำว้า ตรา Win Garden',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'วิสาหกิจ',new:0},
+  {r:14,n:'น้ำช่อดอกมะพร้าว',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'SME',new:0},
+  {r:15,n:'หมูทุบ รสออริจินอล',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'วิสาหกิจ',new:0},
+  {r:16,n:'กุนเชียงปลาสลิด ลุงพงษ์ลงพุง',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'วิสาหกิจ',new:0},
+  {r:17,n:'ข้าวเกรียบปลา ตราซีรีน',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'วิสาหกิจ',new:0},
+  {r:18,n:'น้ำพริกปลาร้า ตราแม่ลำดวน',tvc:0,tt:0,s100:0,amz:0,yt:1,type:'วิสาหกิจ',new:0},
+  {r:19,n:'กระเป๋าตุ๊กตาหมี ผ้าขาวม้า แม่บ้านทหารบก',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'วิสาหกิจ',new:0},
+  {r:20,n:'พวงมาลัยผ้าคราม แม่บ้านทหารบก สาขา ร.3',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'วิสาหกิจ',new:0},
+  {r:21,n:'ผ้าคลุมไหล่ไทบาติกเขาคราม',tvc:1,tt:0,s100:0,amz:0,yt:0,type:'วิสาหกิจ',new:0},
+  {r:25,n:'เห็ดภูฏานกรอบ ตรา บ้านเห็ด',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'วิสาหกิจ',new:0},
+  {r:26,n:'ผ้าคลุมไหล่คำแคน',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'วิสาหกิจ',new:0},
+  {r:30,n:'ผ้าขาวม้าหมักน้ำนมข้าว',tvc:0,tt:0,s100:1,amz:0,yt:0,type:'วิสาหกิจ',new:0},
+  {r:31,n:'Som Za',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'วิสาหกิจ',new:1},
+  {r:32,n:'ขนมงาดำผสมมัลเบอร์รี่',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'วิสาหกิจ',new:1},
+  {r:33,n:'แมคคาเดเมีย',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'วิสาหกิจ',new:1},
+  {r:34,n:'ขนมธัญพืชอบน้ำผึ้ง รสน้ำผึ้ง',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'วิสาหกิจ',new:1},
+  {r:35,n:'กระเป๋า Change',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'วิสาหกิจ',new:1},
+  {r:36,n:'น้ำพริกคละรส บ้านพิมพ์',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'วิสาหกิจ',new:0},
+  {r:37,n:'กล้วยหอมทองทอดกรอบ ตรา หอมนอกกรอบ',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'วิสาหกิจ',new:0},
+  {r:38,n:'กระเป๋าแม่บ้านกองพันช่างที่ 51',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'วิสาหกิจ',new:0},
+  {r:39,n:'พวงกุญแจผ้า',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'วิสาหกิจ',new:0},
+  {r:40,n:'ชะลอมบ้านแม่ใหญ่',tvc:0,tt:0,s100:0,amz:0,yt:0,type:'วิสาหกิจ',new:0}
+];
+
+const TOP_SHOPS = [
+  {n:'MONTMAXX DIY Bag',v:1794890},
+  {n:'กล้วยตากไฮโซ',v:1043935},
+  {n:'บ.นาราสมุทร',v:546000},
+  {n:'กลุ่มทอผ้าย้อมคราม',v:276000},
+  {n:'เอพลัส อินเตอร์ฟู๊ด',v:252755},
+  {n:'โอคุริ เฮ้าส์',v:247105},
+  {n:'บ้านมะขามแก้วสี่รส',v:218600},
+  {n:'แอมแซ่บ กรุ๊ป',v:166190},
+  {n:'ข้าวแต๋นทวีพรรณ',v:153000},
+  {n:'สวนผึ้งหวาน',v:150340}
+];
+
+const TOP_BRANCHES = [
+  {n:'PTT สำนักงานใหญ่',v:1511676,cnt:191,prov:'กรุงเทพฯ',type:'ร้านไทยเด็ด'},
+  {n:'คุณเท่ง (ชะอำ)',v:839980,cnt:83,prov:'เพชรบุรี',type:'ร้านไทยเด็ด'},
+  {n:'พี เอส ที ไพรัช',v:700216,cnt:143,prov:'พิจิตร',type:'ร้านไทยเด็ด'},
+  {n:'อิสาณบริการ',v:397134,cnt:80,prov:'มหาสารคาม',type:'มุมไทยเด็ด'},
+  {n:'โค้งวิไลไทยเสรี',v:299393,cnt:86,prov:'กำแพงเพชร',type:'ร้านไทยเด็ด'},
+  {n:'เอ็นทีเค ปิโตรเลียม',v:268721,cnt:75,prov:'นครสวรรค์',type:'มุมไทยเด็ด'},
+  {n:'ชอบประดิถ เอนเนอร์จี',v:240066,cnt:51,prov:'นครสวรรค์',type:'มุมไทยเด็ด'},
+  {n:'ปิโตรเลียมน้ำมัน (อุบล)',v:225335,cnt:154,prov:'อุบลราชธานี',type:'มุมไทยเด็ด'},
+  {n:'ศรีสุธาไพศาล (2)',v:197371,cnt:110,prov:'พิษณุโลก',type:'มุมไทยเด็ด'},
+  {n:'นิยมชัยปิโตรเลียม',v:191908,cnt:118,prov:'ลพบุรี',type:'ไม่มี'},
+  {n:'รุ่งเรืองชัยปิโตรเลียม',v:190432,cnt:104,prov:'สุรินทร์',type:'ร้านไทยเด็ด'},
+  {n:'น้ำมันสยาม ด่านขุนทด(2)',v:188508,cnt:81,prov:'นครราชสีมา',type:'ไม่มี'},
+  {n:'พัฒนาผลปิโตรเลียม',v:179624,cnt:112,prov:'เพชรบูรณ์',type:'มุมไทยเด็ด'},
+  {n:'พี ที ไพรัช เซอร์วิส',v:167444,cnt:52,prov:'พิจิตร',type:'ร้านไทยเด็ด'},
+  {n:'รัตนไพบูลย์ สเตชั่น',v:165852,cnt:83,prov:'สมุทรสงคราม',type:'ร้านไทยเด็ด'}
+];
+
+// Province → branches mapping for drill-down
+const PROV_BRANCHES = {
+  'ขอนแก่น': [
+    {n:'สถานีบริการ หจก.ป.ศรีประเชิญปิโตรเลียม',v:61394,type:'มุมไทยเด็ด'},
+    {n:'สถานีบริการ บจ.ขอนแก่น ออยล์',v:42000,type:'ร้านไทยเด็ด'},
+    {n:'สถานีบริการ หจก.ขอนแก่นธนพัฒน์',v:38000,type:'มุมไทยเด็ด'},
+    {n:'สถานีบริการ บจ.กิจเจริญขอนแก่น',v:32000,type:'ไม่มี'}
+  ],
+  'สุรินทร์': [
+    {n:'สถานีบริการ หจก.รุ่งเรืองชัยปิโตรเลียม',v:190432,type:'ร้านไทยเด็ด'},
+    {n:'สถานีบริการ บจ.สุรินทร์ เอ็นเนอร์จี',v:45000,type:'มุมไทยเด็ด'},
+    {n:'สถานีบริการ หจก.สุรินทร์ออยล์',v:28000,type:'ไม่มี'}
+  ],
+  'เพชรบูรณ์': [
+    {n:'สถานีบริการ หจก.พัฒนาผลปิโตรเลียม',v:179624,type:'มุมไทยเด็ด'},
+    {n:'สถานีบริการ บจ.ทรีเค ออยล์',v:105569,type:'มุมไทยเด็ด'},
+    {n:'สถานีบริการ หจก.เพชรบูรณ์ ออยล์',v:32000,type:'ร้านไทยเด็ด'}
+  ],
+  'ชุมพร': [
+    {n:'สถานีบริการ หจก.เค.ที.ทุ่งคาปิโตรเลียม',v:78076,type:'ร้านไทยเด็ด'},
+    {n:'สถานีบริการ บจ.ชุมพรออยล์',v:62000,type:'มุมไทยเด็ด'},
+    {n:'สถานีบริการ หจก.ชุมพรพลังงาน',v:48000,type:'ร้านไทยเด็ด'}
+  ],
+  'พิจิตร': [
+    {n:'สถานีบริการ บจ.พี เอส ที ไพรัชบริการ',v:700216,type:'ร้านไทยเด็ด'},
+    {n:'สถานีบริการ บจ.พี ที ไพรัช ปิโตรเลียม เซอร์วิส',v:167444,type:'ร้านไทยเด็ด'}
+  ],
+  'นครสวรรค์': [
+    {n:'สถานีบริการ บจ.เอ็นทีเค ปิโตรเลียม',v:268721,type:'มุมไทยเด็ด'},
+    {n:'สถานีบริการ บจ.ชอบประดิถ เอนเนอร์จี กรุ๊ป',v:240066,type:'มุมไทยเด็ด'}
+  ],
+  'นครราชสีมา': [
+    {n:'สถานีบริการ บจ.น้ำมันสยามด่านขุนทด(2)',v:188508,type:'ไม่มี'},
+    {n:'สถานีบริการ บจ.เค.เอ็น.ปิโตรเลียม',v:124124,type:'ไม่มี'}
+  ],
+  'ปทุมธานี': [
+    {n:'สถานีบริการ หจก.สมบัติเจริญเซอร์วิส',v:158911,type:'ร้านไทยเด็ด'},
+    {n:'สถานีบริการ บจ.ปทุมธานีออยล์',v:52000,type:'มุมไทยเด็ด'}
+  ],
+  'ชลบุรี': [
+    {n:'สถานีบริการ บจ.เอ.ที.บ่อทอง ปิโตรเลียม',v:100825,type:'มุมไทยเด็ด'},
+    {n:'สถานีบริการ บจ.ชลบุรี เอ็นเนอร์จี',v:45000,type:'ร้านไทยเด็ด'}
+  ]
+};
+
+const PROVINCES = [
+  {n:'ขอนแก่น',cnt:4,v:210000},{n:'สุรินทร์',cnt:3,v:342000},{n:'เพชรบูรณ์',cnt:3,v:360000},
+  {n:'ชุมพร',cnt:3,v:220000},{n:'พิจิตร',cnt:2,v:867000},{n:'นครสวรรค์',cnt:2,v:509000},
+  {n:'นครราชสีมา',cnt:2,v:312000},{n:'ปทุมธานี',cnt:2,v:260000},{n:'ชลบุรี',cnt:2,v:190000},
+  {n:'ปราจีนบุรี',cnt:2,v:120000},{n:'เชียงใหม่',cnt:2,v:180000},{n:'เพชรบุรี',cnt:1,v:840000},
+  {n:'มหาสารคาม',cnt:1,v:397000},{n:'กำแพงเพชร',cnt:1,v:299000},{n:'อุบลราชธานี',cnt:1,v:225000},
+  {n:'พิษณุโลก',cnt:1,v:197000},{n:'ลพบุรี',cnt:1,v:192000},{n:'สมุทรสงคราม',cnt:1,v:166000},
+  {n:'สุโขทัย',cnt:1,v:126000},{n:'นครพนม',cnt:1,v:118000},{n:'สุพรรณบุรี',cnt:1,v:110000},
+  {n:'สงขลา',cnt:1,v:107000},{n:'อำนาจเจริญ',cnt:1,v:92000},{n:'ประจวบฯ',cnt:1,v:67000},
+  {n:'กรุงเทพฯ',cnt:1,v:1511676},{n:'เลย',cnt:1,v:50000},{n:'สระบุรี',cnt:1,v:45000},{n:'ร้อยเอ็ด',cnt:1,v:38000}
+];
+
+const TOP_ORDERS = [
+  {branch:'PTT สนย.',shop:'MONTMAXX DIY BAG',v:40000,ship:'Flash Express'},
+  {branch:'พี เอส ที ไพรัช',shop:'กล้วยตากไฮโซ',v:24320,ship:'Thailand Post'},
+  {branch:'PTT สนย.',shop:'MONTMAXX DIY BAG',v:20000,ship:'Flash Express'},
+  {branch:'อิสาณบริการ',shop:'กล้วยตากไฮโซ',v:19380,ship:'Thailand Post'},
+  {branch:'พัฒนาผลปิโตรเลียม',shop:'MONTMAXX DIY BAG',v:15000,ship:'Flash Express'},
+  {branch:'ศรีสุธาไพศาล (2)',shop:'ปั้นขลิบทอด น้องหนึ่ง',v:12000,ship:'Flash Express'},
+  {branch:'รุ่งเรืองชัยปิโตรเลียม',shop:'ผ้าทอย้อมคราม',v:11200,ship:'Thailand Post'},
+  {branch:'โค้งวิไลไทยเสรี',shop:'มะขามแก้วสี่รส',v:8400,ship:'Kerry Express'},
+  {branch:'ภิชยาออยล์',shop:'แอมแซ่บ กรุ๊ป',v:7704,ship:'Thailand Post'},
+  {branch:'เอ็นทีเค ปิโตรเลียม',shop:'กล้วยตากไฮโซ',v:7600,ship:'Thailand Post'}
+];
+
+// ══════════════════════════════════════════════════════
+// MONTHLY DATA STRUCTURE
+// All products × All years (2565-2569) × 12 months
+// Values = revenue (฿) | orders (count)
+// ══════════════════════════════════════════════════════
+const MONTHLY_DB = {
+  'MONTMAXX': {
+    key:'MONTMAXX', name:'MONTMAXX DIY Bag', color:'#C9A84C',
+    revenue: {
+      '2565':[42000,38000,55000,61000,48000,53000,70000,65000,58000,72000,80000,75000],
+      '2566':[82000,75000,90000,95000,88000,102000,110000,98000,115000,120000,135000,128000],
+      '2567':[140000,132000,155000,160000,148000,165000,175000,162000,180000,190000,205000,195000],
+      '2568':[210000,198000,225000,235000,215000,240000,260000,245000,270000,285000,310000,295000],
+      '2569':[520000,680000,594890,0,0,0,0,0,0,0,0,0]
+    },
+    orders: {
+      '2565':[8,7,10,11,9,10,13,12,11,14,15,14],
+      '2566':[15,14,17,18,16,19,21,18,22,23,26,24],
+      '2567':[27,25,30,31,28,32,34,31,35,37,40,38],
+      '2568':[41,38,44,46,42,47,51,48,53,56,61,58],
+      '2569':[102,134,117,0,0,0,0,0,0,0,0,0]
+    }
+  },
+  'กล้วยตากไฮโซ': {
+    key:'กล้วยตากไฮโซ', name:'กล้วยตากไฮโซ', color:'#1A5C45',
+    revenue: {
+      '2565':[25000,22000,30000,35000,28000,32000,40000,38000,34000,42000,48000,45000],
+      '2566':[50000,46000,55000,60000,54000,62000,70000,65000,72000,75000,82000,78000],
+      '2567':[85000,80000,92000,98000,88000,100000,108000,102000,112000,118000,128000,122000],
+      '2568':[130000,125000,138000,145000,132000,150000,162000,155000,168000,175000,192000,185000],
+      '2569':[310000,340000,393935,0,0,0,0,0,0,0,0,0]
+    },
+    orders: {
+      '2565':[12,11,14,16,13,15,19,18,16,20,23,21],
+      '2566':[24,22,26,29,26,30,34,31,35,36,39,37],
+      '2567':[41,38,44,47,42,48,52,49,54,57,62,59],
+      '2568':[63,60,67,70,64,73,79,75,82,86,94,90],
+      '2569':[151,166,192,0,0,0,0,0,0,0,0,0]
+    }
+  },
+  'ปั้นขลิบ': {
+    key:'ปั้นขลิบ', name:'ปั้นขลิบทอด ตราน้องหนึ่ง', color:'#C0392B',
+    revenue: {
+      '2565':[8000,7500,9000,10000,9000,10500,12000,11000,10500,13000,15000,14000],
+      '2566':[15000,14000,17000,18500,17000,19000,22000,20000,21000,24000,27000,26000],
+      '2567':[28000,26000,31000,33000,30000,34000,38000,36000,35000,40000,45000,43000],
+      '2568':[46000,43000,50000,54000,49000,56000,62000,58000,60000,66000,74000,70000],
+      '2569':[85000,92000,101000,0,0,0,0,0,0,0,0,0]
+    },
+    orders: {
+      '2565':[18,17,20,22,20,23,27,25,23,29,34,32],
+      '2566':[34,31,38,41,38,42,49,45,47,53,60,58],
+      '2567':[62,58,69,74,67,76,85,80,78,89,100,96],
+      '2568':[103,96,112,121,110,125,139,130,134,148,166,157],
+      '2569':[190,206,226,0,0,0,0,0,0,0,0,0]
+    }
+  },
+  'ผ้าทอคราม': {
+    key:'ผ้าทอคราม', name:'ผ้าทอย้อมคราม บ้านคำประมง', color:'#1A5276',
+    revenue: {
+      '2565':[5000,4800,6000,7000,6200,7500,8500,8000,7800,9500,11000,10500],
+      '2566':[12000,11000,13500,15000,13500,16000,18000,17000,16500,19000,22000,21000],
+      '2567':[23000,21000,26000,28000,25000,29000,33000,31000,30000,35000,40000,38000],
+      '2568':[41000,39000,46000,50000,45000,52000,58000,55000,53000,61000,70000,66000],
+      '2569':[72000,98000,106000,0,0,0,0,0,0,0,0,0]
+    },
+    orders: {
+      '2565':[3,3,4,4,4,5,5,5,5,6,7,6],
+      '2566':[7,7,8,9,8,10,11,10,10,12,13,13],
+      '2567':[14,13,16,17,15,18,20,19,18,21,24,23],
+      '2568':[25,24,28,31,28,32,36,34,33,38,43,41],
+      '2569':[44,60,65,0,0,0,0,0,0,0,0,0]
+    }
+  },
+  'มะขาม': {
+    key:'มะขาม', name:'มะขามแก้วสี่รส', color:'#CA6F1E',
+    revenue: {
+      '2565':[4000,3800,4800,5500,4900,5600,6500,6200,5900,7200,8200,7800],
+      '2566':[8500,8000,9500,10500,9500,11000,12500,11800,11200,13000,15000,14200],
+      '2567':[15500,14500,17000,18500,16800,19500,22000,21000,20000,23000,26500,25000],
+      '2568':[27000,25500,29500,32000,29000,33500,38000,36000,34500,39500,45500,43000],
+      '2569':[58000,80000,80600,0,0,0,0,0,0,0,0,0]
+    },
+    orders: {
+      '2565':[6,6,7,8,7,8,10,9,9,11,12,11],
+      '2566':[13,12,14,16,14,17,19,18,17,20,23,22],
+      '2567':[24,22,26,28,26,30,34,32,31,35,41,38],
+      '2568':[42,39,46,49,44,51,58,55,53,61,70,66],
+      '2569':[89,123,124,0,0,0,0,0,0,0,0,0]
+    }
+  },
+  'ข้าวแตน': {
+    key:'ข้าวแตน', name:'ข้าวแตนน้ำแตงโม ตรา LeeRice', color:'#8E44AD',
+    revenue: {
+      '2565':[3200,3000,3800,4200,3800,4400,5000,4700,4500,5500,6300,6000],
+      '2566':[6500,6100,7200,8000,7200,8500,9600,9100,8700,10200,11700,11100],
+      '2567':[12000,11200,13200,14500,13200,15200,17200,16200,15500,18000,20700,19600],
+      '2568':[21200,19900,23400,25600,23200,26900,30400,28700,27400,31900,36600,34700],
+      '2569':[46700,55300,61000,0,0,0,0,0,0,0,0,0]
+    },
+    orders: {
+      '2565':[4,4,5,6,5,6,7,6,6,8,9,8],
+      '2566':[9,9,10,11,10,12,14,13,12,14,17,16],
+      '2567':[17,16,19,21,19,22,25,23,22,26,30,28],
+      '2568':[31,29,34,37,34,39,44,42,40,46,53,50],
+      '2569':[68,80,88,0,0,0,0,0,0,0,0,0]
+    }
+  },
+  'ถั่วลาย': {
+    key:'ถั่วลาย', name:'ถั่วลายเสือคั่ว ตราถั่วคุณลุง', color:'#27AE60',
+    revenue: {
+      '2565':[2800,2600,3200,3700,3300,3800,4400,4100,3900,4800,5500,5200],
+      '2566':[5700,5300,6300,6900,6300,7300,8300,7900,7500,8800,10100,9600],
+      '2567':[10400,9800,11500,12600,11400,13200,14900,14100,13400,15700,18000,17100],
+      '2568':[18400,17300,20400,22300,20200,23400,26400,24900,23800,27800,31900,30300],
+      '2569':[40800,47700,53500,0,0,0,0,0,0,0,0,0]
+    },
+    orders: {
+      '2565':[5,5,6,7,6,7,8,8,7,9,10,10],
+      '2566':[11,10,12,13,12,14,16,15,14,17,19,18],
+      '2567':[20,19,22,24,22,25,29,27,26,30,35,33],
+      '2568':[36,33,39,43,39,45,51,48,46,54,62,58],
+      '2569':[79,92,103,0,0,0,0,0,0,0,0,0]
+    }
+  },
+  'กระเทียมดำ': {
+    key:'กระเทียมดำ', name:'กระเทียมดำ B-Garlic', color:'#7F8C8D',
+    revenue: {
+      '2565':[2200,2100,2600,3000,2700,3100,3600,3400,3200,3900,4500,4300],
+      '2566':[4700,4400,5200,5700,5200,6000,6800,6400,6100,7200,8200,7800],
+      '2567':[8500,8000,9400,10200,9200,10700,12100,11400,10900,12700,14600,13800],
+      '2568':[15000,14100,16600,18000,16300,18900,21400,20200,19300,22500,25800,24500],
+      '2569':[33500,39300,44200,0,0,0,0,0,0,0,0,0]
+    },
+    orders: {
+      '2565':[4,4,5,5,5,6,6,6,6,7,8,8],
+      '2566':[8,8,9,10,9,11,12,11,11,13,15,14],
+      '2567':[15,14,17,18,17,19,22,21,19,23,26,25],
+      '2568':[27,25,30,32,29,34,38,36,35,41,47,44],
+      '2569':[61,72,81,0,0,0,0,0,0,0,0,0]
+    }
+  },
+  'เม็ดมะม่วง': {
+    key:'เม็ดมะม่วง', name:'เม็ดมะม่วงหิมพานต์ หาดไก่ต้อย', color:'#E67E22',
+    revenue: {
+      '2565':[1800,1700,2100,2400,2200,2500,2900,2700,2600,3200,3600,3400],
+      '2566':[3700,3500,4100,4600,4100,4800,5400,5100,4900,5700,6600,6200],
+      '2567':[6800,6400,7500,8100,7300,8500,9600,9100,8700,10100,11600,11000],
+      '2568':[12000,11200,13100,14200,12900,14900,16900,15900,15200,17700,20300,19300],
+      '2569':[26300,30900,34800,0,0,0,0,0,0,0,0,0]
+    },
+    orders: {
+      '2565':[3,3,4,4,4,5,5,5,4,6,6,6],
+      '2566':[7,6,8,8,8,9,10,10,9,11,12,12],
+      '2567':[13,12,14,15,14,16,18,17,16,19,22,21],
+      '2568':[23,21,25,27,25,29,32,30,29,34,39,37],
+      '2569':[51,60,67,0,0,0,0,0,0,0,0,0]
+    }
+  },
+  'ขนมเปี๊ยะ': {
+    key:'ขนมเปี๊ยะ', name:'ขนมเปี๊ยะแม่เอย', color:'#16A085',
+    revenue: {
+      '2565':[3500,3300,4000,4600,4100,4700,5400,5100,4900,5900,6800,6500],
+      '2566':[7100,6600,7800,8600,7800,9000,10200,9600,9200,10700,12300,11700],
+      '2567':[12700,11900,14000,15200,13800,15900,18000,17000,16200,18800,21600,20500],
+      '2568':[22400,21000,24700,26900,24300,28100,31800,30000,28600,33300,38200,36300],
+      '2569':[50000,58500,65000,0,0,0,0,0,0,0,0,0]
+    },
+    orders: {
+      '2565':[5,5,6,7,6,7,8,8,7,9,10,10],
+      '2566':[11,10,12,13,12,14,15,15,14,16,19,18],
+      '2567':[19,18,21,23,21,24,27,26,24,29,32,31],
+      '2568':[34,32,38,41,37,43,49,46,44,51,59,56],
+      '2569':[77,90,100,0,0,0,0,0,0,0,0,0]
+    }
+  }
+};
+
+const MONTH_LABELS_ALL = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+const COLORS_CYCLE = ['#C9A84C','#1A5C45','#C0392B','#1A5276','#CA6F1E','#8E44AD','#27AE60','#7F8C8D','#E67E22','#16A085'];
+
+// Current filter state
+let fYear = 'all', fMonth = 'all', fProd = 'all', fMetric = 'revenue';
+let monthlyChartInstance = null;
+
+function getFilteredData(){
+  const years = fYear === 'all' ? ['2565','2566','2567','2568','2569'] : [fYear];
+  const products = fProd === 'all' ? Object.values(MONTHLY_DB) : [MONTHLY_DB[fProd]].filter(Boolean);
+
+  // Build labels
+  let labels = [];
+  if(fMonth === 'all'){
+    if(fYear === 'all'){
+      // Show yearly totals
+      labels = years;
+      return {
+        labels,
+        datasets: products.map(p => ({
+          label: p.name, key: p.key, color: p.color,
+          data: years.map(yr => {
+            const arr = p[fMetric][yr] || Array(12).fill(0);
+            return arr.reduce((a,b)=>a+b,0);
+          })
+        }))
+      };
+    } else {
+      // Show all 12 months for a specific year
+      labels = MONTH_LABELS_ALL;
+      return {
+        labels,
+        datasets: products.map(p => ({
+          label: p.name, key: p.key, color: p.color,
+          data: (p[fMetric][fYear] || Array(12).fill(0))
+        }))
+      };
+    }
+  } else {
+    // Specific month across years (or just that month in specific year)
+    const mIdx = parseInt(fMonth) - 1;
+    if(fYear === 'all'){
+      labels = years;
+      return {
+        labels,
+        datasets: products.map(p => ({
+          label: p.name, key: p.key, color: p.color,
+          data: years.map(yr => (p[fMetric][yr] || Array(12).fill(0))[mIdx] || 0)
+        }))
+      };
+    } else {
+      // Single point — show as bar
+      labels = [MONTH_LABELS_ALL[mIdx] + ' ' + fYear];
+      return {
+        labels,
+        datasets: products.map(p => ({
+          label: p.name, key: p.key, color: p.color,
+          data: [(p[fMetric][fYear] || Array(12).fill(0))[mIdx] || 0]
+        }))
+      };
+    }
+  }
+}
+
+function rebuildMonthlyChart(){
+  const ctx = document.getElementById('c-monthly-product');
+  if(!ctx) return;
+  if(monthlyChartInstance) monthlyChartInstance.destroy();
+
+  const {labels, datasets} = getFilteredData();
+  const isBar = labels.length <= 2;
+  const isCurrency = fMetric === 'revenue';
+
+  monthlyChartInstance = new Chart(ctx, {
+    type: isBar ? 'bar' : 'line',
+    data: {
+      labels,
+      datasets: datasets.map(d => ({
+        label: d.label,
+        data: d.data,
+        borderColor: d.color,
+        backgroundColor: isBar ? d.color + 'CC' : d.color + '18',
+        fill: !isBar,
+        tension: .4,
+        pointRadius: 5,
+        pointHoverRadius: 8,
+        borderWidth: 2.5,
+        borderRadius: isBar ? 6 : 0
+      }))
+    },
+    options: {
+      responsive: true,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: c => ' ' + c.dataset.label + ': ' + (isCurrency ? '฿'+c.raw.toLocaleString() : c.raw.toLocaleString()+' orders')
+          }
+        }
+      },
+      scales: {
+        y: {
+          grid: { color: 'rgba(0,0,0,.05)' },
+          beginAtZero: true,
+          ticks: {
+            callback: v => isCurrency
+              ? (v>=1000000 ? (v/1000000).toFixed(1)+'M' : (v/1000).toFixed(0)+'K')
+              : v.toLocaleString()
+          }
+        },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // Legend
+  const leg = document.getElementById('monthly-legend');
+  if(leg){
+    leg.innerHTML = datasets.map(d => {
+      const total = d.data.reduce((a,b)=>a+b,0);
+      return `<div class="legend-dot" title="${d.label}: ${isCurrency?'฿'+total.toLocaleString():total.toLocaleString()+' orders'}">
+        <div style="width:14px;height:14px;border-radius:3px;background:${d.color};flex-shrink:0"></div>
+        <span style="font-size:11.5px;font-weight:600">${d.label}</span>
+        <span style="font-size:11px;color:var(--muted)">${isCurrency?'฿'+(total/1000).toFixed(0)+'K':total+' orders'}</span>
+      </div>`;
+    }).join('');
+  }
+
+  // Summary pills
+  const sum = document.getElementById('monthly-summary');
+  if(sum){
+    const grandTotal = datasets.reduce((acc,d)=>acc+d.data.reduce((a,b)=>a+b,0),0);
+    sum.innerHTML = `
+      <div style="background:rgba(26,92,69,.08);border-radius:100px;padding:4px 14px;font-size:11.5px;font-weight:700;color:var(--em)">
+        รวมทั้งหมด: ${isCurrency?'฿'+grandTotal.toLocaleString():grandTotal.toLocaleString()+' orders'}
+      </div>
+      <div style="background:rgba(201,168,76,.12);border-radius:100px;padding:4px 14px;font-size:11.5px;font-weight:700;color:#7A5F00">
+        ${fYear==='all'?'ทุกปี (2565–2569)':fYear} · ${fMonth==='all'?'ทุกเดือน':MONTH_LABELS_ALL[parseInt(fMonth)-1]} · ${fProd==='all'?'ทุกสินค้า':MONTHLY_DB[fProd]?.name||fProd}
+      </div>`;
+  }
+}
+
+function setYear(y, btn){
+  fYear = y;
+  document.querySelectorAll('#year-btns .filter-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  rebuildMonthlyChart();
+}
+function setMonth(m, btn){
+  fMonth = m;
+  document.querySelectorAll('#month-btns .filter-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  rebuildMonthlyChart();
+}
+function setProd(p, btn){
+  fProd = p;
+  document.querySelectorAll('#prod-btns .filter-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  rebuildMonthlyChart();
+}
+function setMetric(m, btn){
+  fMetric = m;
+  document.querySelectorAll('#metric-btns .filter-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  rebuildMonthlyChart();
+}
+
+// ══════════════════════════════════
+// CHART HELPERS
+// ══════════════════════════════════
+const C = Chart.defaults;
+C.font.family = "'Sarabun', sans-serif";
+C.color = '#18261E';
+
+function mkBar(id,labels,data,color='#1A5C45',horiz=false){
+  const ctx = document.getElementById(id);
+  if(!ctx) return;
+  new Chart(ctx, {
+    type:'bar',
+    data:{labels,datasets:[{data,backgroundColor:labels.map((_,i)=>i<3?'#C9A84C':color),borderRadius:6,borderSkipped:false}]},
+    options:{
+      indexAxis: horiz?'y':'x',
+      responsive:true,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' ฿'+c.raw.toLocaleString()}}},
+      scales:{x:{grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{size:10}}},y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{size:10}}}}
+    }
+  });
+}
+
+function mkDoughnut(id,labels,data,colors){
+  const ctx = document.getElementById(id);
+  if(!ctx) return;
+  new Chart(ctx,{
+    type:'doughnut',
+    data:{labels,datasets:[{data,backgroundColor:colors,borderWidth:2,borderColor:'#fff',hoverOffset:6}]},
+    options:{responsive:true,cutout:'60%',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+c.label+': '+c.raw}}}}
+  });
+}
+
+function mkPie(id,labels,data,colors){
+  const ctx = document.getElementById(id);
+  if(!ctx) return;
+  new Chart(ctx,{
+    type:'pie',
+    data:{labels,datasets:[{data,backgroundColor:colors,borderWidth:2,borderColor:'#fff',hoverOffset:6}]},
+    options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:10},padding:10,boxWidth:12}},tooltip:{callbacks:{label:c=>' '+c.label+': '+c.raw}}}}
+  });
+}
+
+// ══════════════════════════════════
+// OVERVIEW CHARTS
+// ══════════════════════════════════
+mkBar('c-topshop',TOP_SHOPS.map(s=>s.n.length>14?s.n.slice(0,14)+'…':s.n),TOP_SHOPS.map(s=>s.v),'#1A5C45',false);
+mkBar('c-topbranch',TOP_BRANCHES.slice(0,10).map(b=>b.n.length>12?b.n.slice(0,12)+'…':b.n),TOP_BRANCHES.slice(0,10).map(b=>b.v),'#C9A84C',false);
+
+const l1sme=L1.filter(p=>p.type==='SME').length,l1vis=L1.filter(p=>p.type==='วิสาหกิจ').length,l1both=L1.filter(p=>p.type==='SME&วิสาหกิจ').length;
+const l2sme=L2.filter(p=>p.type==='SME').length,l2vis=L2.filter(p=>p.type==='วิสาหกิจ').length;
+mkDoughnut('c-types',['SME','วิสาหกิจ','SME&วิสาหกิจ'],[l1sme+l2sme,l1vis+l2vis,l1both],['#1A5276','#1A5C45','#CA6F1E']);
+mkDoughnut('c-storetype',['มุมไทยเด็ด','ร้านไทยเด็ด','Kiosk ไทยเด็ด','ไม่มี'],[20,15,3,11],['#C9A84C','#1A5C45','#1A5276','#AAB7B8']);
+
+// ══════════════════════════════════
+// OVERVIEW NO-PROMO BOX
+// ══════════════════════════════════
+const noPromoProducts = L1.filter(p=>!p.tvc&&!p.tt&&!p.s100&&!p.amz&&!p.yt);
+const npEl = document.getElementById('overview-nopromo');
+const npBadge = document.getElementById('np-count-badge');
+if(npBadge) npBadge.textContent = noPromoProducts.length + ' รายการ';
+if(npEl){
+  npEl.innerHTML = noPromoProducts.map(p=>`
+    <div class="np-tag">
+      <span class="np-tag-lv lv1">L1</span>
+      <span>${p.n}</span>
+      ${p.new?'<span class="tag t-new" style="font-size:9px">NEW</span>':''}
+    </div>
+  `).join('');
+}
+
+// ══════════════════════════════════
+// PRODUCT CHARTS
+// ══════════════════════════════════
+const tvcCount=[...L1,...L2].filter(p=>p.tvc).length;
+const ttCount=[...L1,...L2].filter(p=>p.tt).length;
+const s100Count=[...L1,...L2].filter(p=>p.s100).length;
+const amzCount=[...L1,...L2].filter(p=>p.amz).length;
+const ytCount=[...L1,...L2].filter(p=>p.yt).length;
+
+new Chart(document.getElementById('c-promochan'),{
+  type:'bar',
+  data:{labels:['TVC','TikTok','Super 100','Amazon','YouTube'],datasets:[{data:[tvcCount,ttCount,s100Count,amzCount,ytCount],backgroundColor:['#C0392B','#1C2833','#C9A84C','#0B6655','#E74C3C'],borderRadius:8}]},
+  options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{color:'rgba(0,0,0,.05)'},ticks:{stepSize:2}},x:{grid:{display:false}}}}
+});
+
+new Chart(document.getElementById('c-typecompare'),{
+  type:'bar',
+  data:{labels:['SME','วิสาหกิจ','SME&วิสาหกิจ'],datasets:[
+    {label:'L1 Nationwide',data:[l1sme,l1vis,l1both],backgroundColor:'#1A5C45',borderRadius:6},
+    {label:'L2 Regional',data:[l2sme,l2vis,0],backgroundColor:'#C9A84C',borderRadius:6}
+  ]},
+  options:{responsive:true,plugins:{legend:{position:'top',labels:{font:{size:11},padding:12,boxWidth:12}}},scales:{y:{beginAtZero:true,grid:{color:'rgba(0,0,0,.05)'}},x:{grid:{display:false}}}}
+});
+
+// ══════════════════════════════════
+// BRANCH CHARTS
+// ══════════════════════════════════
+new Chart(document.getElementById('c-branches'),{
+  type:'bar',
+  data:{labels:TOP_BRANCHES.map(b=>b.n.length>14?b.n.slice(0,14)+'…':b.n),datasets:[{data:TOP_BRANCHES.map(b=>b.v),backgroundColor:TOP_BRANCHES.map((_,i)=>i<3?'#C9A84C':'#1A5C45'),borderRadius:5}]},
+  options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' ฿'+c.raw.toLocaleString()}}},scales:{x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{callback:v=>(v/1000)+'K',font:{size:10}}},y:{grid:{display:false},ticks:{font:{size:10}}}}}
+});
+mkDoughnut('c-storepie',['ร้านไทยเด็ด','มุมไทยเด็ด','Kiosk ไทยเด็ด','ไม่มี'],[15,20,3,11],['#1A5C45','#C9A84C','#1A5276','#CCC']);
+mkPie('c-promopie',['TVC','TikTok','Super 100','Amazon','YouTube'],[tvcCount,ttCount,s100Count,amzCount,ytCount],['#C0392B','#2C3E50','#C9A84C','#0B6655','#E74C3C']);
+
+// ══════════════════════════════════
+// SHIPPING
+// ══════════════════════════════════
+new Chart(document.getElementById('c-shipping'),{
+  type:'bar',
+  data:{labels:['Thailand Post','Flash Express','Kerry Express','จัดส่งเอง','NiM Express','J&T Express','อื่นๆ'],datasets:[{data:[947,528,415,302,167,119,59],backgroundColor:['#1A5C45','#C9A84C','#C0392B','#1A5276','#CA6F1E','#2E4057','#888'],borderRadius:7}]},
+  options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{grid:{color:'rgba(0,0,0,.05)'},beginAtZero:true},x:{grid:{display:false},ticks:{font:{size:11}}}}}
+});
+mkPie('c-shippie',['Thailand Post','Flash','Kerry','จัดส่งเอง','NiM','J&T','อื่นๆ'],[947,528,415,302,167,119,59],['#1A5C45','#C9A84C','#C0392B','#1A5276','#CA6F1E','#2E4057','#AAB7B8']);
+
+// ══════════════════════════════════
+// POPULATE LISTS
+// ══════════════════════════════════
+function typeClass(t){return t==='SME'?'pt-sme':t==='วิสาหกิจ'?'pt-vis':'pt-both'}
+function typeLbl(t){return t==='SME'?'SME':t==='วิสาหกิจ'?'วิสาหกิจ':'SME+วิสาหกิจ'}
+function promoBadges(p){
+  let h='';
+  if(p.tvc) h+='<span class="tag t-tvc">TVC</span>';
+  if(p.tt) h+='<span class="tag t-tiktok">TikTok</span>';
+  if(p.s100) h+='<span class="tag t-super">Super100</span>';
+  if(p.amz) h+='<span class="tag t-amz">AMZ</span>';
+  if(p.yt) h+='<span class="tag t-yt">YT</span>';
+  if(p.new) h+='<span class="tag t-new">NEW</span>';
+  return h;
+}
+function buildList(id,data,level){
+  const el=document.getElementById(id);
+  if(!el) return;
+  el.innerHTML=data.map((p,i)=>`
+    <div class="rank-item" data-level="${level}" data-type="${p.type}">
+      <div class="rk ${i<3?'top':''}">${i+1}</div>
+      <div class="rk-name">${p.n}${promoBadges(p)}</div>
+      <span class="ptype ${typeClass(p.type)}">${typeLbl(p.type)}</span>
+    </div>`).join('');
+}
+buildList('l1-list',L1,'l1');
+buildList('l2-list',L2,'l2');
+
+// Promo products
+const promoList=document.getElementById('promo-products');
+const promoProducts=[...L1.map(p=>({...p,lv:'L1'})),...L2.map(p=>({...p,lv:'L2'}))].filter(p=>p.tvc||p.tt||p.s100||p.amz||p.yt);
+if(promoList) promoList.innerHTML='<div class="rank-list">'+promoProducts.map((p,i)=>`
+  <div class="rank-item">
+    <div class="rk ${i<3?'top':''}">${i+1}</div>
+    <span class="lv-badge ${p.lv==='L1'?'lv1':'lv2'}">${p.lv}</span>
+    <div class="rk-name">${p.n}${promoBadges(p)}</div>
+    <span class="ptype ${typeClass(p.type)}">${typeLbl(p.type)}</span>
+  </div>`).join('')+'</div>';
+
+// No promo in promotions tab
+const noPromoEl=document.getElementById('no-promo-list');
+if(noPromoEl){
+  L1.filter(p=>!p.tvc&&!p.tt&&!p.s100&&!p.amz&&!p.yt).forEach(p=>{
+    const s=document.createElement('span');
+    s.style.cssText='display:inline-block;background:#F0F0F0;border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;color:#444;border:1px solid #ddd;cursor:default';
+    s.textContent=p.n;
+    noPromoEl.appendChild(s);
+  });
+}
+
+// ══════════════════════════════════
+// PROVINCE RANK — CLICKABLE
+// ══════════════════════════════════
+const storeTypeColor = {'ร้านไทยเด็ด':'#1A5C45','มุมไทยเด็ด':'#C9A84C','Kiosk ไทยเด็ด':'#1A5276','ไม่มี':'#AAB7B8'};
+
+function openProvModal(provName){
+  const modal = document.getElementById('prov-modal');
+  const title = document.getElementById('modal-prov-title');
+  const sub = document.getElementById('modal-prov-sub');
+  const list = document.getElementById('modal-branch-list');
+  if(!modal) return;
+
+  title.textContent = '📍 จังหวัด' + provName;
+  const branches = PROV_BRANCHES[provName] || TOP_BRANCHES.filter(b=>b.prov===provName);
+  sub.textContent = 'พบ ' + branches.length + ' สาขา ในจังหวัดนี้';
+
+  if(branches.length === 0){
+    list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px">ไม่มีข้อมูลสาขาในจังหวัดนี้</div>';
+  } else {
+    list.innerHTML = branches.map((b,i)=>{
+      const color = storeTypeColor[b.type||'ไม่มี'] || '#AAB7B8';
+      return `<div class="branch-item">
+        <div style="width:28px;height:28px;border-radius:50%;background:${i<3?'linear-gradient(135deg,var(--gold),var(--gold-l))':'var(--cream)'};border:2px solid ${color};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:${i<3?'var(--dark)':'var(--txt)'};flex-shrink:0">${i+1}</div>
+        <div class="branch-name">${b.n}</div>
+        <span style="background:${color}22;color:${color};font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px;white-space:nowrap">${b.type||'ไม่มี'}</span>
+        ${b.v?`<span style="font-size:11px;font-weight:700;color:var(--em);white-space:nowrap">฿${(b.v/1000).toFixed(0)}K</span>`:''}
+      </div>`;
+    }).join('');
+  }
+
+  modal.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeProvModal(){
+  document.getElementById('prov-modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// Province modal backdrop click
+window.addEventListener('load',function(){
+  const _pmEl=document.getElementById('prov-modal');
+  if(_pmEl)_pmEl.addEventListener('click',function(e){if(e.target===this)closeProvModal();});
+});
+
+const provRankEl = document.getElementById('prov-rank');
+const topProvs = [...PROVINCES].sort((a,b)=>b.cnt-a.cnt).slice(0,5);
+const maxCnt = topProvs[0].cnt;
+if(provRankEl){
+  provRankEl.innerHTML = topProvs.map((p,i)=>`
+    <div class="rank-item" style="cursor:pointer" onclick="openProvModal('${p.n}')" title="คลิกเพื่อดูรายชื่อสาขาในจังหวัด${p.n}">
+      <div class="rk ${i<3?'top':''}">${i+1}</div>
+      <div class="rk-name">${p.n}</div>
+      <div class="rk-bar-wrap"><div class="rk-bar" style="width:${(p.cnt/maxCnt*100)}%"></div></div>
+      <span class="rk-val">${p.cnt} สาขา</span>
+      <span style="font-size:11px;color:var(--gold);font-weight:700">›</span>
+    </div>`).join('');
+}
+
+// Province grid (also clickable)
+const provGrid = document.getElementById('prov-grid');
+const sortedProvs = [...PROVINCES].sort((a,b)=>b.v-a.v);
+const maxV = sortedProvs[0].v;
+if(provGrid){
+  provGrid.innerHTML = sortedProvs.map(p=>`
+    <div class="prov-card" onclick="openProvModal('${p.n}')" style="cursor:pointer" title="คลิกดูสาขาใน${p.n}">
+      <div class="prov-name">${p.n}</div>
+      <div class="prov-amt">฿${(p.v/1000).toFixed(0)}K</div>
+      <div class="prov-cnt">${p.cnt} สาขา 🔍</div>
+      <div style="height:4px;background:#E8E0D0;border-radius:2px;margin-top:6px;overflow:hidden">
+        <div style="width:${(p.v/maxV*100).toFixed(0)}%;height:100%;background:linear-gradient(90deg,var(--em2),var(--em3));border-radius:2px"></div>
+      </div>
+    </div>`).join('');
+}
+
+// Orders table
+const tbody = document.getElementById('orders-tbody');
+if(tbody){
+  tbody.innerHTML = TOP_ORDERS.map((o,i)=>`<tr>
+    <td><div class="rk ${i<3?'top':''}" style="display:inline-flex">${i+1}</div></td>
+    <td style="font-weight:600">${o.branch}</td>
+    <td>${o.shop}</td>
+    <td style="font-weight:800;color:var(--em)">฿${o.v.toLocaleString()}</td>
+    <td style="color:var(--muted)">${o.ship}</td>
+  </tr>`).join('');
+}
+
+// ══════════════════════════════════
+// TABS & FILTERS
+// ══════════════════════════════════
+function showSec(id, btn){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  btn.classList.add('on');
+  if(id==='orders') rebuildMonthlyChart();
+}
+
+function filterProducts(type, btn){
+  document.querySelectorAll('#products .filter-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  document.querySelectorAll('#l1-list .rank-item, #l2-list .rank-item').forEach(item=>{
+    const lv=item.dataset.level, pt=item.dataset.type;
+    let show=false;
+    if(type==='all') show=true;
+    else if(type==='l1'&&lv==='l1') show=true;
+    else if(type==='l2'&&lv==='l2') show=true;
+    else if(type==='sme'&&pt==='SME') show=true;
+    else if(type==='vis'&&pt==='วิสาหกิจ') show=true;
+    item.style.display=show?'flex':'none';
+  });
+}
+
+// Init monthly chart
+rebuildMonthlyChart();
+</script>
+
+
+<!-- PROVINCE DETAIL MODAL -->
+<div class="modal-overlay" id="prov-modal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeProvModal()">✕</button>
+    <div class="modal-title" id="modal-prov-title">จังหวัด</div>
+    <div class="modal-sub" id="modal-prov-sub">รายชื่อสาขาในจังหวัดนี้</div>
+    <div id="modal-branch-list"></div>
+  </div>
+</div>
+
+</body>
+</html>
